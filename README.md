@@ -94,3 +94,20 @@ This will:
 2. Copy the template
 3. Run through all main targets (`help`, `check-env`, `init-git`, `local-dev`)
 4. Clean up the test directory
+
+## Dev Container Troubleshooting
+
+### Git push fails: "REMOTE HOST IDENTIFICATION HAS CHANGED!"
+If you see:
+```
+WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!
+Host key verification failed.
+```
+Fix locally (inside the container):
+```bash
+ssh-keygen -R github.com
+ssh-keyscan -H -t rsa,ecdsa,ed25519 github.com >> ~/.ssh/known_hosts
+```
+Notes:
+- The dev container now refreshes GitHub host keys on creation to prevent this.
+- This error can appear after GitHub rotates a host key or if an outdated key exists in `~/.ssh/known_hosts`.

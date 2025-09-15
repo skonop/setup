@@ -16,6 +16,7 @@ init-git:
 	git init
 	git add .
 	git commit -m "Initial commit from template"
+	$(MAKE) ssh-refresh-known-hosts
 
 # Requires VS Code and Dev Containers extension
 # This will rebuild the container if using VS Code
@@ -53,3 +54,11 @@ check-env:
 	else \
 		echo "uv is NOT installed. Install with: pip install uv"; \
 	fi
+
+.PHONY: ssh-refresh-known-hosts
+ssh-refresh-known-hosts:
+	@echo "Refreshing github.com host keys"
+	@mkdir -p ~/.ssh && chmod 700 ~/.ssh
+	@touch ~/.ssh/known_hosts && chmod 644 ~/.ssh/known_hosts
+	@ssh-keygen -R github.com >/dev/null 2>&1 || true
+	@ssh-keyscan -H -t rsa,ecdsa,ed25519 github.com 2>/dev/null >> ~/.ssh/known_hosts
