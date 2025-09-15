@@ -57,6 +57,17 @@ make local-dev
    - Edit `.devcontainer/devcontainer.json` for container customization
    - Add additional VS Code extensions or settings
 
+### 5. Linking to Target Repo
+
+1. Go to github, gitlab or other code versioning solution of your choice
+2. Create a new repo, without adding any files to it (no README, license etc.)
+3. Copy repo link and add it as remote to your local project
+```bash
+git remote add origin git@github.com:your_user/your_project.git
+git branch -M main
+git push -u origin main
+```
+
 ## Project Structure
 
 ```
@@ -111,3 +122,31 @@ ssh-keyscan -H -t rsa,ecdsa,ed25519 github.com >> ~/.ssh/known_hosts
 Notes:
 - The dev container now refreshes GitHub host keys on creation to prevent this.
 - This error can appear after GitHub rotates a host key or if an outdated key exists in `~/.ssh/known_hosts`.
+
+### Using SSH keys inside the container
+
+- Preferred: use your host SSH agent
+  1. On the host, ensure a key is loaded:
+     ```bash
+     ssh-add -l || true
+     # If empty, add one (example):
+     ssh-add ~/.ssh/id_ed25519
+     ```
+  2. Inside the container, verify:
+     ```bash
+     ssh -T git@github.com
+     ```
+  Notes:
+  - If `ssh-add -l` says “permission denied” inside the container, your host agent’s socket permissions don’t match the container user. The container will fall back to its own ssh-agent.
+
+- Fallback: use a container-local ssh-agent
+  ```bash
+  # Generate a new key (no passphrase recommended only for throwaway dev)
+  ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -N ''
+  # Load it into the container ssh-agent
+  ssh-add ~/.ssh/id_ed25519
+  # Show the public key and add it to GitHub -> Settings -> SSH and GPG keys
+  cat ~/.ssh/id_ed25519.pub
+  # Test
+  ssh -T git@github.com
+  ```
