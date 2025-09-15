@@ -23,7 +23,9 @@
       "version": "latest",
       "ppa": false
     },
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "moby": false
+    },
     "ghcr.io/devcontainers-extra/features/pre-commit:2": {}
   },
   // VS Code specific settings
@@ -58,12 +60,11 @@
   "remoteUser": "vscode", // The user to run as
   "mounts": [
     // Persist dependencies between container rebuilds
-    "source=${localWorkspaceFolderBasename}-venv,target=${containerWorkspaceFolder}/.venv,type=volume",
-    // Persist SSH keys and config
-    "source=vscode-ssh,target=/home/vscode/.ssh,type=volume"
+    "source=${localWorkspaceFolderBasename}-venv,target=${containerWorkspaceFolder}/.venv,type=volume"
   ],
-  // Commands to run after container is created
-  "postCreateCommand": "mkdir -p ~/.ssh && ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts && uv venv && . .venv/bin/activate && uv pip install -r pyproject.toml",
+  // Set default shell for command execution
+  "postStartCommand": "bash",
+  "postCreateCommand": "set -e && echo '=== Setting up SSH directory ===' && sudo chown vscode:vscode /home/vscode && mkdir -p ~/.ssh && chmod 700 ~/.ssh && ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts && chmod 644 ~/.ssh/known_hosts && echo '=== Installing uv package manager ===' && curl -LsSf https://astral.sh/uv/install.sh | sh && echo '=== Setting up Python environment ===' && uv venv && . .venv/bin/activate && uv pip install --system pyproject.toml",
   // Container environment variables
   "remoteEnv": {
     "PYTHONPATH": "${containerWorkspaceFolder}",
