@@ -57,11 +57,13 @@
   // Container specific settings
   "remoteUser": "vscode", // The user to run as
   "mounts": [
-    // Uncomment to persist dependencies between container rebuilds
-    "source=${localWorkspaceFolderBasename}-venv,target=${containerWorkspaceFolder}/.venv,type=volume"
+    // Persist dependencies between container rebuilds
+    "source=${localWorkspaceFolderBasename}-venv,target=${containerWorkspaceFolder}/.venv,type=volume",
+    // Persist SSH keys and config
+    "source=vscode-ssh,target=/home/vscode/.ssh,type=volume"
   ],
   // Commands to run after container is created
-  "postCreateCommand": "uv venv && . .venv/bin/activate && uv pip install -r pyproject.toml",
+  "postCreateCommand": "mkdir -p ~/.ssh && ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts && uv venv && . .venv/bin/activate && uv pip install -r pyproject.toml",
   // Container environment variables
   "remoteEnv": {
     "PYTHONPATH": "${containerWorkspaceFolder}",
