@@ -1,0 +1,11 @@
+[project]
+name = "python-template"
+version = "0.1.0"
+description = "A template for new Python projects with dev container support."
+authors = ["Stefan Konopnicki <stefan.konopnicki@gmail.com>"]
+
+[project.dependencies]
+prettyconf = "*"
+
+[tool.uv]
+# uv will use this section for dependency management
