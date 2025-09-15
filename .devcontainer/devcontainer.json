@@ -60,16 +60,16 @@
   "remoteUser": "vscode", // The user to run as
   "mounts": [
     // Persist dependencies between container rebuilds
-    "source=${localWorkspaceFolderBasename}-venv,target=${containerWorkspaceFolder}/.venv,type=volume"
+    "source=${localWorkspaceFolderBasename}-venv,target=${containerWorkspaceFolder}/.venv,type=volume,consistency=delegated"
   ],
   // Set default shell for command execution
-  "postStartCommand": "bash",
-  "postCreateCommand": "set -e && echo '=== Setting up SSH directory ===' && sudo chown vscode:vscode /home/vscode && mkdir -p ~/.ssh && chmod 700 ~/.ssh && ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts && chmod 644 ~/.ssh/known_hosts && echo '=== Installing uv package manager ===' && curl -LsSf https://astral.sh/uv/install.sh | sh && echo '=== Setting up Python environment ===' && uv venv && . .venv/bin/activate && uv pip install --system pyproject.toml",
+  "postStartCommand": "echo 'Container started'",
+  "postCreateCommand": "set -euo pipefail && echo '=== Setting up SSH directory ===' && sudo chown -R vscode:vscode /home/vscode && mkdir -p ~/.ssh && chmod 700 ~/.ssh && touch ~/.ssh/known_hosts && (ssh-keygen -F github.com >/dev/null || ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts) && chmod 644 ~/.ssh/known_hosts && echo '=== Ensuring uv is installed ===' && export PATH=$HOME/.local/bin:$PATH && (command -v uv >/dev/null 2>&1 || (curl -LsSf https://astral.sh/uv/install.sh | sh)) && export PATH=$HOME/.local/bin:$PATH && echo '=== Preparing .venv directory and permissions ===' && mkdir -p ${containerWorkspaceFolder}/.venv && sudo chown -R vscode:vscode ${containerWorkspaceFolder}/.venv && echo '=== Setting up Python environment ===' && if [ ! -x .venv/bin/python ]; then uv venv --python /usr/local/bin/python; fi && uv pip install -e . && uv export --group dev --no-hashes -o /tmp/requirements-dev.txt && uv pip install -r /tmp/requirements-dev.txt",
   // Container environment variables
   "remoteEnv": {
     "PYTHONPATH": "${containerWorkspaceFolder}",
     "VIRTUAL_ENV": "${containerWorkspaceFolder}/.venv",
-    "PATH": "${containerWorkspaceFolder}/.venv/bin:${env:PATH}"
+    "PATH": "${containerWorkspaceFolder}/.venv/bin:${env:HOME}/.local/bin:${env:PATH}"
   },
   // Port forwarding
   "forwardPorts": [
